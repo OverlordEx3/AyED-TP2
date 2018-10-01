@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <cstdlib>
 /* Para uso de la estructura */
-typedef char cadena[20];
+typedef char cadena[20+1];
 
 enum Equipos{
   Rusia = 1,
