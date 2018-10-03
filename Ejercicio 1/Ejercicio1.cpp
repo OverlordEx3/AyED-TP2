@@ -8,14 +8,22 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <random>
+#include <time.h>
 
 /* Incluyo la definicion de la estructura de gol */
 #include "DefinicionEstructura.h"
 
 using namespace std;
 
+typedef struct nodoGol{
+	RegistroGol gol;
+	struct nodoGol *siguiente;
+	struct nodoGol *anterior;
+}NodoGol;
+
 /* Registro global de goles */
-RegistroGol *Goles;
+NodoGol *Goles;
 
 static bool CopiarRegistro(RegistroGol *destino, RegistroGol *origen)
 {
@@ -33,49 +41,93 @@ static bool CopiarRegistro(RegistroGol *destino, RegistroGol *origen)
 	return true;
 }
 
-static bool Busca(RegistroGol *arreglo, RegistroGol *registro, unsigned char largo)
+static void Inserta(NodoGol **listaDeNodos, RegistroGol *registro)
 {
-	int pivote = 0;
-	if(arreglo == NULL)
+	/* Nodo nuevo a ser insertado */
+	NodoGol *nodoAuxiliar = new NodoGol();
+
+	CopiarRegistro(&nodoAuxiliar->gol, registro);
+
+	nodoAuxiliar->siguiente = (*listaDeNodos)->siguiente;
+	(*listaDeNodos)->siguiente = nodoAuxiliar;
+
+	nodoAuxiliar->anterior = *listaDeNodos;
+	if(nodoAuxiliar->siguiente != NULL)
 	{
-		//La referencia al arreglo donde buscar
-		//Debe ser valida.
-		//Si no lo es, se añade un elemento.
-		return true;
+		nodoAuxiliar->siguiente->anterior = nodoAuxiliar;
+	}
+}
+
+static NodoGol* NodoMedio(NodoGol* principio, NodoGol* final)
+{
+	NodoGol *nodoLento = principio, *nodoRapido = principio->siguiente;
+
+	while(nodoRapido != final)
+	{
+		/* El nodo rapido avanza dos posiciones por vuelta del ciclo */
+		nodoRapido = nodoRapido->siguiente;
+		if(nodoRapido != final)
+		{
+			nodoRapido = nodoRapido->siguiente;
+			nodoLento = nodoLento->siguiente;
+		}
 	}
 
-	pivote = largo/2;
+	return nodoLento;
+}
 
-	if(arreglo[pivote].fecha < registro->fecha)
+static bool Busca(NodoGol *listaDeNodos, NodoGol* final, RegistroGol *registro)
+{
+	NodoGol* pivote;
+
+//	if(largo == 0)
+//	{
+//		/* No existe una referencia donde buscar
+//		 * O un registro a encontrar.
+//		 * Agrego uno */
+//		Inserta(&listaDeNodos, registro);
+//		return true;
+//	}
+
+	pivote = NodoMedio(listaDeNodos, final);
+
+	if(pivote->gol.codigoDeEquipo == registro->codigoDeEquipo)
 	{
-		if(pivote == 0)
+		/* Se encontro */
+		return true;
+	} else if (pivote->gol.codigoDeEquipo > registro->codigoDeEquipo)
+	{
+		if(listaDeNodos == pivote)
 		{
+			Inserta(&listaDeNodos->anterior, registro);
 			return true;
 		}
-		return Busca(arreglo + (pivote + 1), registro, largo - pivote);
-	} else if(arreglo[pivote].fecha > registro->fecha) {
-		if(pivote == 0)
+		return Busca(listaDeNodos, pivote, registro);
+	} else if(pivote->gol.codigoDeEquipo < registro->codigoDeEquipo)
+	{
+		if(listaDeNodos == pivote)
 		{
+			Inserta(&listaDeNodos, registro);
 			return true;
 		}
-		return Busca(arreglo, registro, pivote);
-	} else {
-		/* Ya existe */
-		return false;
+		return Busca(pivote->siguiente, final, registro);
 	}
 
 	return false;
 }
 
-static bool BuscaEInserta(RegistroGol *arreglo, RegistroGol *registro, unsigned char largo)
+static bool BuscaEInserta(NodoGol *arreglo, RegistroGol *registro, unsigned char largo)
 {
-	bool retorno = false;
+	return Busca(arreglo, NULL, registro);
+}
 
-	retorno = Busca(arreglo, registro, largo);
-
-	if(retorno == true)
+static void Imprime(NodoGol *lista)
+{
+	cout << "Codigo de Equipo"<< endl; //TODO completar
+	while(lista != NULL)
 	{
-		/* Copy element */
+		cout << lista->gol.codigoDeEquipo << endl;
+		lista = lista->siguiente;
 	}
 }
 
@@ -83,29 +135,25 @@ static bool BuscaEInserta(RegistroGol *arreglo, RegistroGol *registro, unsigned 
 int main(void)
 {
 	RegistroGol RegistroAInsertar;
+	int fibo[] = {144, 2, 3, 10946, 4181, 1597, 21, 987 , 55, 89, 1, 233, 610, 377, 34, 13, 2584, 8 , 6765, 5};
 	cout << "Entry point." << endl;
 
-
-	memset((void *)&RegistroAInsertar, 0, sizeof(RegistroGol));
-	RegistroAInsertar.fecha = 4;
-
-	//10 elementos
-	Goles = (RegistroGol *)malloc(sizeof(RegistroGol)*10);
-
-	for(int i = 0, j = 0; i < 11; i++)
+	if(Goles == NULL)
 	{
-		if(i+1 != 4) {
-			Goles[j].fecha = i + 1;
-			j++;
-		}
+		/* Lista vacia, creo el primer nodo */
+		Goles = new NodoGol();
+		Goles->siguiente = Goles->anterior = NULL;
 	}
 
-	if(BuscaEInserta(Goles, &RegistroAInsertar, 10))
+	srand(time(NULL));
+
+	for(int i = 0; i < 20; i++)
 	{
-		cout << "Found" << endl;
-	} else {
-		cout << "Not found! :c" << endl;
+		RegistroAInsertar.codigoDeEquipo = fibo[i];
+		BuscaEInserta(Goles, &RegistroAInsertar, i);
 	}
+
+	Imprime(Goles);
 
 	system("PAUSE");
 	return 0;
