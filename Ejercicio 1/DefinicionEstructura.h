@@ -95,5 +95,12 @@ struct registroGol{
 /* Para usar como tipo en lugar de instancia de estructura. */
 typedef struct registroGol RegistroGol;
 
+struct nodoGol
+{
+	struct nodoGol *siguiente;
+	struct nodoGol *anterior;
+	RegistroGol gol;
+};
 
+typedef struct nodoGol NodoGol;
 #endif /* DEFINICIONESTRUCTURA_H_ */
