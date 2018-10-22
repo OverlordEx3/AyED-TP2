@@ -130,7 +130,7 @@ nodo* buscarUltimo(nodo* listaActual) {
     return ultimaPosicion;
 };
 
-void insertarUltimo(nodo* listaActual, tipoGol regGol) {
+void insertarUltimo(nodo* &listaActual, tipoGol regGol) {
     nodo* ultimaPosicion;
     nodo* nuevo = new nodo();
     strcpy(nuevo -> jugador, regGol.nombreJugador);
