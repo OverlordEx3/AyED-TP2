@@ -52,7 +52,7 @@ static void InsertaNodoPorFecha(NodoGol *&Anterior, NodoGol* &base, RegistroGol 
 	/* Copio la base */
 	baseAux = base;
 	baseAnterior = Anterior;
-	while(baseAux != NULL && baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo && Nodo.fecha > baseAux->gol.fecha)
+	while(baseAux != NULL && baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo && Nodo.fecha >= baseAux->gol.fecha)
 	{
 		baseAnterior = baseAux;
 		baseAux = baseAux->siguiente;
@@ -234,36 +234,63 @@ int seleccionequipo(const char* aux)
 	return 0;
 }
 
+void ImprimeInformacion(RegistroGol *nodo)
+{
+	/* Se usa printf aca, ya que es mas sencillo formatear la salida
+	 */
+	printf("%5d - %10d - %8d - %s\n", nodo->idGol, nodo->idPartido, nodo->fecha, nodo->nombreDelJugador);
+}
+
 void MostrarNodos(NodoGol *Nodos)
 {
 	NodoGol *aux = Nodos;
+	int IdActual = 0;
 
-	cout<<"IdGol"<<" "<<"Codigo de equipo"<<"           "<<"Fecha"<<"             "<<"Nombre de jugador"<<"   "<<"Id Partido"<<endl;
 	while(aux != NULL)
 	{
-		cout<<aux->gol.idGol<<"                 "<<aux->gol.codigoDeEquipo<<"           "<<aux->gol.fecha<<"               "<<aux->gol.nombreDelJugador<<"                    "<<aux->gol.idPartido<<endl;
+		if(IdActual != aux->gol.codigoDeEquipo)
+		{
+			IdActual = aux->gol.codigoDeEquipo;
+			/* Imprime encabezado */
+			cout<<"-------------------------------------"<<endl;
+			cout<<"Equipo #: " << IdActual << endl;
+			cout<<"IdGol"<<" - " <<"Id Partido"<<" - "<<"  Fecha "<<" - "<<"Nombre de jugador"<<endl;
+		}
+
+		ImprimeInformacion(&aux->gol);
+
 		aux = aux->siguiente;
 	}
 }
 
 void mostrarArchivo (const char *nombreArchivo)
 {
-	int c=0 ;
+	int IdActual=0 ;
 	RegistroGol Gol;
 	FILE *f;
 
 	f = fopen (nombreArchivo,"rb");
-	if (f != NULL)
+	if (f == NULL)
 	{
-		fread (&Gol, sizeof(Gol), 1, f);
-		cout<<"IdGol"<<" "<<"Codigo de equipo"<<"           "<<"Fecha"<<"             "<<"Nombre de jugador"<<"   "<<"Id Partido"<<endl;
-		while (!feof(f))
-		{
-			cout<<Gol.idGol<<"                 "<<Gol.codigoDeEquipo<<"           "<<Gol.fecha<<"               "<<Gol.nombreDelJugador<<"                    "<<Gol.idPartido<<endl;
-			fread (&Gol, sizeof(Gol), 1, f);
+		cout << "Error al abrir el archivo " << nombreArchivo << endl;
+		return;
+	}
 
-			c++;
+	fread (&Gol, sizeof(Gol), 1, f);
+	while (!feof(f))
+	{
+		if(IdActual != Gol.codigoDeEquipo)
+		{
+			IdActual = Gol.codigoDeEquipo;
+			/* Imprime encabezado */
+			cout<<"-------------------------------------"<<endl;
+			cout<<"Equipo #: " << IdActual << endl;
+			cout<<"IdGol"<<" - " <<"Id Partido"<<" - "<<"  Fecha "<<" - "<<"Nombre de jugador"<<endl;
 		}
+
+		ImprimeInformacion(&Gol);
+
+		fread (&Gol, sizeof(Gol), 1, f);
 	}
 	fclose (f);
 }
@@ -306,7 +333,7 @@ void CargarGoles(NodoGol* &goles)
 		cout<<"Nombre de equipo: ";
 		cin.ignore();
 		cin.getline(NombreEquipo, 256);
-		Gol.codigoDeEquipo= seleccionequipo(NombreEquipo);//codigo de equipo //TODO chequear valido
+		Gol.codigoDeEquipo= seleccionequipo(NombreEquipo);//codigo de equipo
 
 		cout<<"Nombre del jugador que hizo GOL: ";
 		cin.getline(Gol.nombreDelJugador, sizeof(Gol.nombreDelJugador)); //Nombre del jugador
@@ -324,7 +351,6 @@ void CargarGoles(NodoGol* &goles)
 		cout << "Ingrese ID de Partido (0 para terminar de agregar partidos): ";
 		cin >> Gol.idPartido;//id del partido repito para el corte
 	}
-	cout<<"-------------------------------------"<<endl;
 
 	/* Genero el archivo final */
 	GeneraArchivoGoles(goles);
@@ -335,6 +361,7 @@ void CargarGolesAutomatico(NodoGol* &goles)
 	RegistroGol Gol;
 	FILE *fGoles;
 
+	cout << "Procesando archivo " << NOMBRE_ARCH_GOLES_ORIGINAL << endl;
 	fGoles = fopen(NOMBRE_ARCH_GOLES_ORIGINAL, "rb");
 
 	if(fGoles == NULL)
@@ -351,7 +378,6 @@ void CargarGolesAutomatico(NodoGol* &goles)
 		/* Leo el siguiente */
 		fread((void *)&Gol,sizeof(RegistroGol), 1, fGoles);
 	}
-	cout<<"-------------------------------------"<<endl;
 
 	GeneraArchivoGoles(goles);
 
@@ -366,15 +392,14 @@ int main(void)
 	/* Listado de goles */
 	NodoGol *goles = NULL;
 
-	cout << "1: Cargar goles (MANUAL)" << endl;
-	cout << "2: Cargar goles (AUTO)" << endl;
-	cout << "3: Ver listado de goles original" << endl;
-	cout << "4: Ver listado de goles ordenado" << endl;
-	cout << "5: Ver listado de goles ordenado (LOCAL)" << endl;
-	cout << "0: Salir" << endl;
-	cout << endl;
-
 	do{
+		cout << "1: Cargar goles (MANUAL)" << endl;
+		cout << "2: Cargar goles (AUTO)" << endl;
+		cout << "3: Ver listado de goles original" << endl;
+		cout << "4: Ver listado de goles ordenado (por equipo y fecha)" << endl;
+		cout << "5: Ver listado de goles ordenado (por equipo y fecha) (LOCAL)" << endl;
+		cout << "0: Salir" << endl;
+		cout << endl;
 		cout << "Opcion: ";
 
 		cin>>opcion;
@@ -409,6 +434,8 @@ int main(void)
 			cout<<"Error, opcion invalida";
 			break;
 		}
+
+		cout<<"-------------------------------------"<<endl;
 	}while(opcion != 0);
 
 	return 0;
