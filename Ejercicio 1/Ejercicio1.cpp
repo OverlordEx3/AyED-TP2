@@ -18,64 +18,98 @@
 
 using namespace std;
 
-static void InsertaNodoPorFecha(NodoGol* &base, RegistroGol Nodo)
+static void InsertarInicio(NodoGol *&base, RegistroGol Nodo)
 {
-	NodoGol *baseAux;
 	NodoGol *nuevoNodo = new NodoGol();
 
 	nuevoNodo->gol = Nodo;
+	nuevoNodo->siguiente = base;
+	base = nuevoNodo;
+}
 
-	if(Nodo.fecha < base->gol.fecha)
-	{
-		nuevoNodo->siguiente = base;
-		base = nuevoNodo;
+static void Insertar(NodoGol *&Destino, RegistroGol Nodo)
+{
+	NodoGol *nuevoNodo = new NodoGol();
 
-		return;
-	}
+	nuevoNodo->gol = Nodo;
+	nuevoNodo->siguiente = Destino->siguiente;
+	Destino->siguiente = nuevoNodo;
+}
 
-	/* copia de la base */
+static void InsertarFinal(NodoGol *&Destino, RegistroGol Nodo)
+{
+	NodoGol *nuevoNodo = new NodoGol();
+
+	nuevoNodo->gol = Nodo;
+	nuevoNodo->siguiente = NULL;
+	Destino->siguiente = nuevoNodo;
+}
+
+static void InsertaNodoPorFecha(NodoGol *&Anterior, NodoGol* &base, RegistroGol Nodo)
+{
+	NodoGol *baseAux, *baseAnterior;
+
+	/* Copio la base */
 	baseAux = base;
-	while(baseAux->siguiente != NULL || (baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo && baseAux->gol.fecha < Nodo.fecha))
+	baseAnterior = Anterior;
+	while(baseAux != NULL && baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo && Nodo.fecha > baseAux->gol.fecha)
 	{
+		baseAnterior = baseAux;
 		baseAux = baseAux->siguiente;
 	}
 
-	nuevoNodo->siguiente = baseAux->siguiente;
-	baseAux->siguiente = nuevoNodo;
-
-	return;
+	/*  Inserto nuevo nodo en la posicion hallada */
+	if(baseAux == NULL)
+	{
+		/* Recorri la lista y no halle nada */
+		InsertarFinal(baseAnterior, Nodo);
+	} else if(baseAnterior == Anterior) {
+		/* La fecha del primer elemento es mayor
+		 * La base auxiliar anterior no cambio */
+		Insertar(Anterior, Nodo);
+	} else {
+		Insertar(baseAnterior, Nodo);
+	}
 }
 
 static void InsertaNodo(NodoGol* &base, RegistroGol Nodo)
 {
-	NodoGol *baseAux;
-	NodoGol *nuevoNodo = new NodoGol();
+	NodoGol *baseAux, *baseAnterior;
 
-	nuevoNodo->gol = Nodo;
 	if(base == NULL)
 	{
-		nuevoNodo->siguiente = NULL;
-		base = nuevoNodo;
+		InsertarInicio(base, Nodo);
 		return;
 	}
 
-	baseAux = base; /* copia de la base */
-	while(baseAux->siguiente != NULL || baseAux->gol.codigoDeEquipo < Nodo.codigoDeEquipo)
+
+	/* Copio la base */
+	baseAux = base;
+	baseAnterior = base;
+
+	while(baseAux != NULL && Nodo.codigoDeEquipo > baseAux->gol.codigoDeEquipo)
 	{
+		baseAnterior = baseAux;
 		baseAux = baseAux->siguiente;
 	}
 
-	if(baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo)
+	/*  Inserto nuevo nodo en la posicion hallada */
+	if(baseAux == NULL)
 	{
-		/* A partir de aca, insertar por fecha */
-		InsertaNodoPorFecha(baseAux, Nodo);
-		return;
+		/* Recorri la lista y no halle nada */
+		InsertarFinal(baseAnterior, Nodo);
+	} else if(baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo)
+	{
+		/* Inserto por fecha */
+		InsertaNodoPorFecha(baseAnterior, baseAux, Nodo);
+	} else if(baseAux == baseAnterior) {
+		/* Nuevo primer elemento */
+		InsertarInicio(base, Nodo);
+	} else {
+		/* No era ni el primer ni el ultimo elemento,
+		 * Ni tampoco habia nadie igual */
+		Insertar(baseAnterior, Nodo);
 	}
-
-	/*  Inserto nuevo nodo en la posicion hallada
-	 * Que no es igual ni mayor que el codigo de equipo a insertar */
-	nuevoNodo->siguiente = baseAux->siguiente;
-	baseAux->siguiente = nuevoNodo;
 
 	return;
 }
@@ -88,7 +122,7 @@ void ConvierteEnMinusculas(char *aux)
 	{
 		size = strlen(aux);
 
-		for(int c = 0; c < size; c++) {
+		for(size_t c = 0; c < size; c++) {
 			aux[c] = tolower(aux[c]);
 		}
 	}
@@ -350,10 +384,12 @@ int main(void)
 			break;
 
 		case 1:
+			goles = NULL;
 			CargarGoles(goles);
 			break;
 
 		case 2:
+			goles = NULL;
 			CargarGolesAutomatico(goles);
 			break;
 
@@ -368,6 +404,7 @@ int main(void)
 		case 5:
 			MostrarNodos(goles);
 			break;
+
 		default:
 			cout<<"Error, opcion invalida";
 			break;
