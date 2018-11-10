@@ -12,10 +12,11 @@
 /* Incluyo la definicion de la estructura de gol */
 #include "DefinicionEstructura.h"
 
-using namespace std;
+/* Definiciones y etiquetas del usuario */
+#define NOMBRE_ARCH_GOLES_ORIGINAL "goles2018.dat\0"
+#define NOMBRE_ARCH_GOLES_ORDENADO "archivogol.dat\0"
 
-/* Registro global de goles */
-NodoGol *goles;
+using namespace std;
 
 static void InsertaNodoPorFecha(NodoGol* &base, RegistroGol Nodo)
 {
@@ -34,7 +35,7 @@ static void InsertaNodoPorFecha(NodoGol* &base, RegistroGol Nodo)
 
 	/* copia de la base */
 	baseAux = base;
-	while(baseAux->siguiente != NULL && baseAux->siguiente->gol.fecha < Nodo.fecha)
+	while(baseAux->siguiente != NULL || (baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo && baseAux->gol.fecha < Nodo.fecha))
 	{
 		baseAux = baseAux->siguiente;
 	}
@@ -54,27 +55,17 @@ static void InsertaNodo(NodoGol* &base, RegistroGol Nodo)
 	if(base == NULL)
 	{
 		nuevoNodo->siguiente = NULL;
-		nuevoNodo->anterior = NULL;
 		base = nuevoNodo;
-		return;
-	}
-
-	if(Nodo.codigoDeEquipo < base->gol.codigoDeEquipo)
-	{
-		nuevoNodo->siguiente = base;
-		nuevoNodo->anterior = base->anterior;
-		base = nuevoNodo;
-
 		return;
 	}
 
 	baseAux = base; /* copia de la base */
-	while(baseAux->siguiente != NULL && baseAux->siguiente->gol.codigoDeEquipo < Nodo.codigoDeEquipo)
+	while(baseAux->siguiente != NULL || baseAux->gol.codigoDeEquipo < Nodo.codigoDeEquipo)
 	{
 		baseAux = baseAux->siguiente;
 	}
 
-	if(baseAux->siguiente != NULL && baseAux->siguiente->gol.codigoDeEquipo == Nodo.codigoDeEquipo)
+	if(baseAux->gol.codigoDeEquipo == Nodo.codigoDeEquipo)
 	{
 		/* A partir de aca, insertar por fecha */
 		InsertaNodoPorFecha(baseAux, Nodo);
@@ -84,150 +75,129 @@ static void InsertaNodo(NodoGol* &base, RegistroGol Nodo)
 	/*  Inserto nuevo nodo en la posicion hallada
 	 * Que no es igual ni mayor que el codigo de equipo a insertar */
 	nuevoNodo->siguiente = baseAux->siguiente;
-	nuevoNodo->anterior = baseAux;
 	baseAux->siguiente = nuevoNodo;
 
 	return;
 }
 
-int seleccionequipo(string aux)
+void ConvierteEnMinusculas(char *aux)
 {
-	if(aux.compare("rusia") == 0)
+	size_t size;
+
+	if(aux != NULL)
+	{
+		size = strlen(aux);
+
+		for(int c = 0; c < size; c++) {
+			aux[c] = tolower(aux[c]);
+		}
+	}
+}
+int seleccionequipo(const char* aux)
+{
+
+	/* Convierto la cadena en minusculas */
+	ConvierteEnMinusculas((char *)aux);
+
+	if(strcmp("rusia", aux) == 0)
 	{
 		return Rusia;
-	} else if(aux.compare("alemania") == 0)
+	} else if(strcmp("alemania", aux) == 0)
 	{
 		return Alemania;
-	} else if(aux.compare("brasil") == 0)
+	} else if(strcmp("brasil", aux) == 0)
 	{
 		return Brasil;
-	} else if(aux.compare("portugal") == 0)
+	} else if(strcmp("portugal", aux) == 0)
 	{
 		return Portugal;
-	} else if(aux.compare("argentina") == 0)
+	} else if(strcmp("argentina", aux) == 0)
 	{
 		return Argentina;
-	} else if(aux.compare("belgica") == 0)
+	} else if(strcmp("belgica", aux) == 0)
 	{
 		return Belgica;
-	} else if(aux.compare("polonia") == 0)
+	} else if(strcmp("polonia", aux) == 0)
 	{
 		return Polonia;
-	} else if(aux.compare("francia") == 0)
+	} else if(strcmp("francia", aux) == 0)
 	{
 		return Francia;
-	} else if(aux.compare("españa") == 0)
+	} else if(strcmp("españa", aux) == 0)
 	{
 		return Espana;
-	}  else if(aux.compare("peru") == 0)
+	}  else if(strcmp("peru", aux) == 0)
 	{
 		return Peru;
-	}  else if(aux.compare("suiza") == 0)
+	}  else if(strcmp("suiza", aux) == 0)
 	{
 		return Suiza;
-	} else if(aux.compare("inglaterra") == 0)
+	} else if(strcmp("inglaterra", aux) == 0)
 	{
 		return Inglaterra;
-	} else if(aux.compare("colombia") == 0)
+	} else if(strcmp("colombia", aux) == 0)
 	{
 		return Colombia;
-	} else if(aux.compare("mexico") == 0)
+	} else if(strcmp("mexico", aux) == 0)
 	{
 		return Mexico;
-	} else if(aux.compare("uruguay") == 0)
+	} else if(strcmp("uruguay", aux) == 0)
 	{
 		return Uruguay;
-	} else if(aux.compare("croacia") == 0)
+	} else if(strcmp("croacia", aux) == 0)
 	{
 		return Croacia;
-	}  else if(aux.compare("dinamarca") == 0)
+	}  else if(strcmp("dinamarca", aux) == 0)
 	{
 		return Dinamarca;
-	} else if(aux.compare("islandia") == 0)
+	} else if(strcmp("islandia", aux) == 0)
 	{
 		return Islandia;
-	} else if(aux.compare("costa rica") == 0)
+	} else if(strcmp("costa rica", aux) == 0)
 	{
 		return CostaRica;
-	} else if(aux.compare("suecia") == 0)
+	} else if(strcmp("suecia", aux) == 0)
 	{
 		return Suecia;
-	} else if(aux.compare("tunez") == 0)
+	} else if(strcmp("tunez", aux) == 0)
 	{
 		return Tunez;
-	}  else if(aux.compare("egipto") == 0)
+	}  else if(strcmp("egipto", aux) == 0)
 	{
 		return Egipto;
-	} else if(aux.compare("senegal") == 0)
+	} else if(strcmp("senegal", aux) == 0)
 	{
 		return Senegal;
-	}  else if(aux.compare("iran") == 0)
+	}  else if(strcmp("iran", aux) == 0)
 	{
 		return Iran;
-	} else if(aux.compare("serbia") == 0)
+	} else if(strcmp("serbia", aux) == 0)
 	{
 		return Serbia;
-	} else if(aux.compare("nigeria") == 0)
+	} else if(strcmp("nigeria", aux) == 0)
 	{
 		return Nigeria;
-	} else if(aux.compare("australia") == 0)
+	} else if(strcmp("australia", aux) == 0)
 	{
 		return Australia;
-	} else if(aux.compare("japon") == 0)
+	} else if(strcmp("japon", aux) == 0)
 	{
 		return Japon;
-	} else if(aux.compare("marruecos") == 0)
+	} else if(strcmp("marruecos", aux) == 0)
 	{
 		return Marruecos;
-	} else if(aux.compare("panama") == 0)
+	} else if(strcmp("panama", aux) == 0)
 	{
 		return Panama;
-	} else if(aux.compare("corea del sur") == 0)
+	} else if(strcmp("corea del sur", aux) == 0)
 	{
 		return CoreaDelSur;
-	} else if(aux.compare("arabia saudita") == 0)
+	} else if(strcmp("arabia saudita", aux) == 0)
 	{
 		return ArabiaSaudita;
 	}
 
 	return 0;
-}
-
-void CargarGoles(NodoGol* &goles)
-{
-	RegistroGol Gol;
-	string NombreEquipo;
-	int dia = 0;
-	int mes = 0;
-
-	Gol.idGol=0;
-	cout << "Ingrese ID de Partido (0 para terminar de agregar partidos): ";
-	cin >> Gol.idPartido;//id del partido
-	while (Gol.idPartido != 0 && Gol.idPartido < 65)
-	{
-		cout<<"ID de gol:" << Gol.idGol<<endl; //id del gol
-
-		cout<<"Nombre de equipo"<<endl;
-		cin>>NombreEquipo;
-		Gol.codigoDeEquipo= seleccionequipo(NombreEquipo);//codigo de equipo //TODO chequear valido
-
-		cout<<"Nombre del jugador que hizo GOL"<<endl;
-		cin>>Gol.nombreDelJugador;//Nombre del jugador
-
-		cout<<"Fecha:" << endl;
-		cout<<"mes: ";
-		cin>>mes;
-		cout<<"dia: ";
-		cin>>dia;
-		Gol.fecha= (10000*2018) + (mes*100) + (dia);
-		/* Busca - inserta */
-		InsertaNodo(goles, Gol);
-
-		Gol.idGol++;
-		cout << "Ingrese ID de Partido (0 para terminar de agregar partidos): ";
-		cin >> Gol.idPartido;//id del partido repito para el corte
-	}
-	cout<<"-------------------------------------"<<endl;
 }
 
 void MostrarNodos(NodoGol *Nodos)
@@ -242,15 +212,15 @@ void MostrarNodos(NodoGol *Nodos)
 	}
 }
 
-void mostrarArchivo ()
+void mostrarArchivo (const char *nombreArchivo)
 {
 	int c=0 ;
 	RegistroGol Gol;
 	FILE *f;
-	f = fopen ("archivogol.dat","rb");
+
+	f = fopen (nombreArchivo,"rb");
 	if (f != NULL)
 	{
-		//cout<<"Id gol"<<endl;
 		fread (&Gol, sizeof(Gol), 1, f);
 		cout<<"IdGol"<<" "<<"Codigo de equipo"<<"           "<<"Fecha"<<"             "<<"Nombre de jugador"<<"   "<<"Id Partido"<<endl;
 		while (!feof(f))
@@ -264,14 +234,145 @@ void mostrarArchivo ()
 	fclose (f);
 }
 
+void GeneraArchivoGoles(NodoGol *goles)
+{
+	FILE *fGoles;
+	NodoGol *CopiaGoles = goles;
+
+	fGoles = fopen(NOMBRE_ARCH_GOLES_ORDENADO, "wb+");
+	if(fGoles == NULL)
+	{
+		cout << "Error al abrir/crear el archivo de goles." << endl;
+		return;
+	}
+
+	while(CopiaGoles != NULL)
+	{
+		fwrite((void *)&CopiaGoles->gol, sizeof(RegistroGol), 1, fGoles);
+		CopiaGoles = CopiaGoles->siguiente;
+	}
+
+	fclose(fGoles);
+}
+
+void CargarGoles(NodoGol* &goles)
+{
+	RegistroGol Gol;
+	char NombreEquipo[MAX_LARGO_CADENA];
+	int dia = 0;
+	int mes = 0;
+
+	Gol.idGol=0;
+	cout << "Ingrese ID de Partido (0 para terminar de agregar partidos): ";
+	cin >> Gol.idPartido;//id del partido
+	while (Gol.idPartido != 0 && Gol.idPartido < 65)
+	{
+		cout<<"ID de gol:" << Gol.idGol<<endl; //id del gol
+
+		cout<<"Nombre de equipo: ";
+		cin.ignore();
+		cin.getline(NombreEquipo, 256);
+		Gol.codigoDeEquipo= seleccionequipo(NombreEquipo);//codigo de equipo //TODO chequear valido
+
+		cout<<"Nombre del jugador que hizo GOL: ";
+		cin.getline(Gol.nombreDelJugador, sizeof(Gol.nombreDelJugador)); //Nombre del jugador
+
+		cout<<"Fecha:" << endl;
+		cout<<"Mes: ";
+		cin>>mes;
+		cout<<"Dia: ";
+		cin>>dia;
+		Gol.fecha= (10000*2018) + (mes*100) + (dia);
+		/* Busca - inserta */
+		InsertaNodo(goles, Gol);
+
+		Gol.idGol++;
+		cout << "Ingrese ID de Partido (0 para terminar de agregar partidos): ";
+		cin >> Gol.idPartido;//id del partido repito para el corte
+	}
+	cout<<"-------------------------------------"<<endl;
+
+	/* Genero el archivo final */
+	GeneraArchivoGoles(goles);
+}
+
+void CargarGolesAutomatico(NodoGol* &goles)
+{
+	RegistroGol Gol;
+	FILE *fGoles;
+
+	fGoles = fopen(NOMBRE_ARCH_GOLES_ORIGINAL, "rb");
+
+	if(fGoles == NULL)
+	{
+		printf("Error al abrir el archivo de goles original.\n");
+		return;
+	}
+
+	fread((void *)&Gol,sizeof(RegistroGol), 1, fGoles);
+	while (!feof(fGoles))
+	{
+		/* Busca - inserta */
+		InsertaNodo(goles, Gol);
+		/* Leo el siguiente */
+		fread((void *)&Gol,sizeof(RegistroGol), 1, fGoles);
+	}
+	cout<<"-------------------------------------"<<endl;
+
+	GeneraArchivoGoles(goles);
+
+	/* Cierro finalmente los archivos */
+	fclose(fGoles);
+}
+
 /* Punto de entrada del programa */
 int main(void)
 {
-    CargarGoles(goles);
-    MostrarNodos(goles);
-	system("PAUSE");
+	int opcion;
+	/* Listado de goles */
+	NodoGol *goles = NULL;
+
+	cout << "1: Cargar goles (MANUAL)" << endl;
+	cout << "2: Cargar goles (AUTO)" << endl;
+	cout << "3: Ver listado de goles original" << endl;
+	cout << "4: Ver listado de goles ordenado" << endl;
+	cout << "5: Ver listado de goles ordenado (LOCAL)" << endl;
+	cout << "0: Salir" << endl;
+	cout << endl;
+
+	do{
+		cout << "Opcion: ";
+
+		cin>>opcion;
+		switch(opcion)	{
+		case 0:
+			cout<<"Final del programa" << endl;
+			break;
+
+		case 1:
+			CargarGoles(goles);
+			break;
+
+		case 2:
+			CargarGolesAutomatico(goles);
+			break;
+
+		case 3:
+			mostrarArchivo(NOMBRE_ARCH_GOLES_ORIGINAL);
+			break;
+
+		case 4:
+			mostrarArchivo(NOMBRE_ARCH_GOLES_ORDENADO);
+			break;
+
+		case 5:
+			MostrarNodos(goles);
+			break;
+		default:
+			cout<<"Error, opcion invalida";
+			break;
+		}
+	}while(opcion != 0);
+
 	return 0;
 }
-
-
-

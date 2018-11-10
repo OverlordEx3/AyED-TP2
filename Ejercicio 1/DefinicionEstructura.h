@@ -10,8 +10,10 @@
 
 #include <cstdio>
 #include <cstdlib>
+
+#define MAX_LARGO_CADENA	19+1
 /* Para uso de la estructura */
-typedef char cadena[20+1];
+typedef char cadena[MAX_LARGO_CADENA];
 
 enum Equipos{
   Rusia = 1,
@@ -98,7 +100,6 @@ typedef struct registroGol RegistroGol;
 struct nodoGol
 {
 	struct nodoGol *siguiente;
-	struct nodoGol *anterior;
 	RegistroGol gol;
 };
 
