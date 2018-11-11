@@ -10,7 +10,8 @@ typedef char str30[31];
 //Creo la estructura del archivo
 struct TRBol{
 	
-	string nomEs;
+	//No podes crear un string aca o se ropme todo CUIDADO D:
+	//string nomEs;
 	int golFav;
 	str30 nomE;
 	
@@ -21,45 +22,10 @@ struct NodoArbol{
 	NodoArbol *ptrIzq;
 	NodoArbol *ptrDer;
 	struct TRBol valor;
+	string nomEs;
 	
 }VecPaisesGol[32];
 
-//Funcion para cargar equipos
-
-void cargarEquipos(){
-	
-	int salir = 0;
-	
-	//Instancio el archivo para poder utilizarlo y cargarle los datos
-	
-	TRBol RBol;
-	
-	//Con esto señalo el archivo con el que quiero trabajar
-	
-	FILE * FBol = fopen("bolillero.dat","wb+");;
-
-	//Ciclo para cargar los equipos y goles
-	
-	for(int i = 0; i < 32; i++){
-		
-		cout<<"Ingrese el nombre del equipo: ";
-		//CON EL GETLINE GUARDO LOS NOMBRES CON ESPACIOS
-		cin.getline(RBol.nomE,15);
-		cin.getline(RBol.nomE,15,'\n') ;
-		
-		cout<<"Ingrese Goles a Favor: ";
-		cin>>RBol.golFav;
-		cout<<"\n";
-			
-			
-		fwrite(&RBol,sizeof(RBol),1,FBol);
-		
-		
-	}
-	
-	fclose(FBol);
-	
-}
 
 //Funcion para leer archivos
 
@@ -72,11 +38,13 @@ void leerArchivo(){
 	
 	//Cargo el archivo con el que quiero trabajar
 	
-	FILE * FBol = fopen("bolillero.dat","rb");;
+	FILE * FBol = fopen("equipos.dat","rb");;
 	
 	//Este while imprime todos los datos del archivo :3
 	
 	fread(&RBol,sizeof(RBol),1,FBol);
+	
+	cout<<"**********************************\n";
 	
 	while(!feof(FBol)){
 		
@@ -93,7 +61,7 @@ void leerArchivo(){
 		fread(&RBol,sizeof(RBol),1,FBol);
 		
 	}
-	
+	cout<<"**********************************\n\n";
 	fclose(FBol);
 	
 }
@@ -103,13 +71,16 @@ void cargarVector(NodoArbol  VecPaisesGol[]){
 	//Inicializo un valor para poder recorrer el array
 	int i = 0;
 	
+	//Creo un string local para poder almacenarlo en el array
+	string nomEs;
+	
 	//Instancio el archivo para trabajar desde el nombre del struct
 	
 	TRBol RBol;
 	
 	//Cargo el archivo con el que quiero trabajar
 	
-	FILE * FBol = fopen("bolillero.dat","rb");
+	FILE * FBol = fopen("equipos.dat","rb");
 	
 	//Este while imprime todos los datos del archivo :3
 	
@@ -119,9 +90,10 @@ void cargarVector(NodoArbol  VecPaisesGol[]){
 		
 		//Transformo los characters a tipo string, luego los asigno al array
 		string nomEs = RBol.nomE;
+		
 		//Copio los valores del archivo al vector
 		
-		VecPaisesGol[i].valor.nomEs = nomEs;
+		VecPaisesGol[i].nomEs = nomEs;
 		//memcpy(VecPaisesGol[i].valor.nomEs, RBol.nomE, strlen(RBol.nomE));
 		
 		VecPaisesGol[i].valor.golFav = RBol.golFav;
@@ -140,14 +112,15 @@ void cargarVector(NodoArbol  VecPaisesGol[]){
 }
 
 void leerVector(NodoArbol  VecPaisesGol[]){
+			
+	cout<<"**********************************\n";	
 	
 	for(int i = 0; i < 32; i++){
 		
-		cout<<"Equipo: "<< VecPaisesGol[i].valor.nomEs<<" --- Goles: "<< VecPaisesGol[i].valor.golFav<<"\n";
-		
-		
+		cout<<"Nombre de equipo: "<< VecPaisesGol[i].nomEs<< "\nGoles a favor: "<< VecPaisesGol[i].valor.golFav<<"\n\n";
+			
 	}
-	
+	cout<<"**********************************\n\n";
 }
 
 //Funcione para crear el Arbol
@@ -159,15 +132,13 @@ void insertarNodo(NodoArbol* &ptrArbol, NodoArbol VecPaisesGol[],int i){
 		//Si encuentra un nodo vacio crea uno nuevo
 		NodoArbol* aux = new NodoArbol();
 		
-		//carga los valores al nodo creado
+		//Carga los valores de los goles del array  al nodo creado
 		
 		aux -> valor.golFav  = VecPaisesGol[i].valor.golFav;
 		
-		//*************************************************************
-		//Problema por tipo de datos que le pasa D:
-		//*************************************************************
+		//Carga los valores de los paises del array al nodo creado*
 		
-		//aux -> valor.nomE  = VecPaisesGol[i].valor.nomE;
+		aux -> nomEs  = VecPaisesGol[i].nomEs;
 		
 		
 		//Pone los hijos en NULL para que despues los asignen
@@ -203,6 +174,8 @@ void insertarNodo(NodoArbol* &ptrArbol, NodoArbol VecPaisesGol[],int i){
 //Funcion para ordenar el arbol
 void inOrder(NodoArbol* &ptrArbol){
 	
+	
+	
 	if(ptrArbol == NULL){
 		
 		return;
@@ -210,7 +183,7 @@ void inOrder(NodoArbol* &ptrArbol){
 	}else{
 		
 		inOrder(ptrArbol ->ptrIzq);
-		cout<<"Equipo: "<<ptrArbol -> valor.nomE<< " - Goles: " <<ptrArbol -> valor.golFav<<"\n";
+		cout<<"Nombre de equipo: "<<ptrArbol -> nomEs<< "\nGoles a favor: " <<ptrArbol -> valor.golFav<<"\n\n";
 		inOrder(ptrArbol -> ptrDer);
 		
 	}
@@ -222,44 +195,45 @@ int main(int argc, char** argv) {
 	
 	NodoArbol* ptrRaiz = NULL;
 	
-	//Varialbe para elegir si quiero escribir archivo o solo leerlo
-	
+	//Variable para elegir que opcion elegir
 	
 	int opcion;
 	
-	cout<<"Bienvenido!!!\n";
+	cout<<"Segunda Parte TP Anual de Algoritmos y Estructura de Datos 2018"<<"\n";
+	cout<<"Ejercicio 3\n\n";
 	
 	do{
 		
-		cout<<"Ingrese 1 para cargar equipos: (No es necesario) "  <<"\n"<< "2 para leer los equipos cargados: "<<"\n"<< "3 cargar Vector: "<<"\n"<<"4 Leer vector: "<<"\n"<<"5 para ordernar y 0 para salir: ";
+		cout<< "1: Leer los datos del archivo "<<"\n"<< "2: Para cargar vector e imprimir los datos del vector "<<"\n"<<"3: Para ordernar los equipos por cantidad de goles "<<"\n"<< "0: Salir "<<"\n\n"<<"Opcion: ";
 		cin>>opcion;
 		switch(opcion)	{
 			case 0:{
-				cout<<"Final del programa";
+				cout<<"\n";
+				cout<<"Fin de programa.";
 				break;
 			}
 		
 			case 1:{
-				cargarEquipos();
-				break;
-			}
-			case 2:{
+				cout<<"\n\n";
 				leerArchivo();
 				break;
 			}
-			case 3:{
+			case 2:{
+				cout<<"\n\n";
 				cargarVector(VecPaisesGol);
-				break;
-			}
-			case 4:{
 				leerVector(VecPaisesGol);
 				break;
 			}
-			case 5:{
+			case 3:{
+				
+				cout<<"\n**********************************\n\n";
+				
 				for(int i = 0; i<32;i++ ){
 				insertarNodo(ptrRaiz,VecPaisesGol,i);		
 				}
 				inOrder(ptrRaiz);
+				
+				cout<<"**********************************\n\n";
 				break;
 			}
 			default:{
